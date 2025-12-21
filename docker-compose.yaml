@@ -15,7 +15,7 @@ services:
     restart: "no"
 
   multimodal-fashion-search:
-    image: ghcr.io/LeeSY99/multimodal-fashion-recommender-system:${APP_VER:-v0.1.0}
+    image: ghcr.io/LeeSY99/multimodal-fashion-recommender-system:${APP_VER:-v0.1.3}
     depends_on:
       fetch-assets:
         condition: service_completed_successfully
