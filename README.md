@@ -78,10 +78,11 @@ git clone https://github.com/LeeSY99/multimodal-fashion-recommender-system.git
 cd multimodal-fashion-recommender-system
 ```
 
-#### 3) Start
+#### 2) Start
 ```bash
+chmod +x scripts/fetch_assets.sh
 docker compose up -d
 docker compose logs -f multimodal-fashion-search
 ```
-#### 4) Open UI
+#### 3) Open UI
 http://localhost:3000/ui/
