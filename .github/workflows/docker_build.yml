@@ -28,6 +28,9 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_TOKEN }}
+    - name: Set image name (lowercase)
+      run: |
+        echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
     - name: Build and Push Docker Image
       uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0
