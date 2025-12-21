@@ -17,7 +17,6 @@ RUN python -c "import nltk; nltk.download('stopwords', quiet=True)"
 COPY service/ /app/service/
 COPY fashion_core/ /app/fashion_core/
 COPY common/ /app/common/
-COPY ui/ /app/ui
 COPY config/ /app/config
 
 # data, models 은 볼륨
