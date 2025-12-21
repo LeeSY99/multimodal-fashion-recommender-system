@@ -1,0 +1,25 @@
+# serve
+bentoml==1.4.30
+fastapi==0.124.4
+
+# Core DL (CPU)
+torch==2.4.0
+torchvision==0.19.0
+
+# Utils / Numerics
+numpy==1.26.4
+Pillow==10.4.0
+
+# Embedding / Models
+transformers==4.45.2
+tokenizers==0.20.0
+safetensors==0.4.5
+
+# Search / Recommendation
+rank_bm25==0.2.2
+implicit==0.7.2
+
+# Vector Search (CPU)
+faiss-cpu==1.8.0.post1
+
+nltk==3.9.2
