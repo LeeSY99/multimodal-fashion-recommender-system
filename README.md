@@ -74,7 +74,7 @@ multimodal-fashion-recommender-system
 #### 1) Clone
 ```bash
 
-git clone https://github.com/f-lab-edu/multimodal-fashion-recommender-system.git
+git clone https://github.com/LeeSY99/multimodal-fashion-recommender-system.git
 cd multimodal-fashion-recommender-system
 ```
 
