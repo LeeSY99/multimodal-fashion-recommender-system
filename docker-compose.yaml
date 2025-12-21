@@ -3,7 +3,7 @@ services:
     image: alpine:3.20
     working_dir: /work
     environment:
-      OWNER: f-lab-edu
+      OWNER: LeeSY99
       REPO: multimodal-fashion-recommender-system
       DATA_ASSETS_VER: d0.1.0
       MODEL_ASSETS_VER: m0.1.0
@@ -15,7 +15,7 @@ services:
     restart: "no"
 
   multimodal-fashion-search:
-    image: ghcr.io/f-lab-edu/multimodal-fashion-recommender-system:${APP_VER:-v0.1.0}
+    image: ghcr.io/LeeSY99/multimodal-fashion-recommender-system:${APP_VER:-v0.1.0}
     depends_on:
       fetch-assets:
         condition: service_completed_successfully
