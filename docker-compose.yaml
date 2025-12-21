@@ -3,7 +3,7 @@ services:
     image: alpine:3.20
     working_dir: /work
     environment:
-      OWNER: LeeSY99
+      OWNER: leesy99
       REPO: multimodal-fashion-recommender-system
       DATA_ASSETS_VER: d0.1.0
       MODEL_ASSETS_VER: m0.1.0
