@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: KustomizationapiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: mfs
+
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: mfs-scripts
+    files:
+      - ../../scripts/fetch_assets.sh
+  - name: mfs-config
+    files:
+      - ../../config/als_model.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
