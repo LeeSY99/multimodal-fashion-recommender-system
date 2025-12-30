@@ -52,7 +52,7 @@ spec:
               readOnly: true
       containers:
         - name: api
-          image: ghcr.io/leesy99/multimodal-fashion-recommender-system:${APP_VER:-v0.1.0}
+          image: ghcr.io/leesy99/multimodal-fashion-recommender-system
           ports:
             - containerPort: 3000
           env:
