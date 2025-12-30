@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multimodal-fashion-recommender
+  namespace: mfs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: multimodal-fashion-recommender
+  template:
+    metadata:
+      labels:
+        app: multimodal-fashion-recommender
+    spec:
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: models
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: mfs-config
+        - name: scripts
+          configMap:
+            name: mfs-scripts
+
+      initContainers:
+        - name: fetch-assets
+          image: alpine:3.20
+          workingDir: /work
+          env:
+            - name: OWNER
+              value: leesy99
+            - name: REPO
+              value: multimodal-fashion-recommender-system
+            - name: DATA_ASSETS_VER
+              value: d0.1.0
+            - name: MODEL_ASSETS_VER
+              value: m0.1.0
+          command: ["/bin/sh","-lc"]
+          args:
+            - apk add --no-cache curl jq tar && /work/scripts/fetch_assets.sh
+          volumeMounts:
+            - name: data
+              mountPath: /work/data
+            - name: models
+              mountPath: /work/models
+            - name: scripts
+              mountPath: /work/scripts/fetch_assets.sh
+              subPath: fetch_assets.sh
+              readOnly: true
+      containers:
+        - name: api
+          image: ghcr.io/leesy99/multimodal-fashion-recommender-system:${APP_VER:-v0.1.0}
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_PATH
+              value: /app/data/fashion_items.db
+            - name: BM25_PATH
+              value: /app/data/bm25_from_item_docs.pkl
+            - name: IMAGE_INDEX_PATH
+              value: /app/data/image_index_with_ids.faiss
+            - name: ALS_CONFIG_PATH
+              value: /app/config/als_model.yaml
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+              readOnly: true
+            - name: models
+              mountPath: /app/models
+              readOnly: true
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+          
