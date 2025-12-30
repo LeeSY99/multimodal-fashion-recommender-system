@@ -40,7 +40,7 @@ spec:
               value: m0.1.0
           command: ["/bin/sh","-lc"]
           args:
-            - apk add --no-cache curl jq tar && /work/scripts/fetch_assets.sh
+            - apk add --no-cache curl jq tar && sh /work/scripts/fetch_assets.sh
           volumeMounts:
             - name: data
               mountPath: /work/data
