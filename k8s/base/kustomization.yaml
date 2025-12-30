@@ -3,6 +3,10 @@ kind: Kustomization
 
 namespace: mfs
 
+images:
+  - name: ghcr.io/leesy99/multimodal-fashion-recommender-system
+    newTag: v0.1.3
+
 resources:
   - namespace.yaml
   - deployment.yaml
