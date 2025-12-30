@@ -11,10 +11,10 @@ resources:
 configMapGenerator:
   - name: mfs-scripts
     files:
-      - ../../scripts/fetch_assets.sh
+      - scripts/fetch_assets.sh
   - name: mfs-config
     files:
-      - ../../config/als_model.yaml
+      - config/als_model.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
