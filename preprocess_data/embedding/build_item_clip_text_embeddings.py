@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 import torch
-from fashion_clip.fashion_clip import FashionCLIP  # 너가 이미 쓰고 있는 패키지 기준
+from fashion_clip.fashion_clip import FashionCLIP
 
 pd.set_option("display.float_format", lambda x: f"{x:,.2f}")
 
