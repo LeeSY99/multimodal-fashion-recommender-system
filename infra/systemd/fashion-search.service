@@ -10,8 +10,8 @@ WorkingDirectory=/opt/multimodal-fashion-recommender-system
 ExecStart=/usr/bin/docker compose -f docker-compose.prod.yaml up -d
 ExecStop=/usr/bin/docker compose -f docker-compose.prod.yaml down
 TimeoutStartSec=120
-User=ubuntu
-Group=ubuntu
+User=__RUN_USER__
+Group=__RUN_GROUP__
 
 [Install]
 WantedBy=multi-user.target

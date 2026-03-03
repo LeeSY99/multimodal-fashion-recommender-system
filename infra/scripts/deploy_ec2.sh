@@ -2,15 +2,26 @@
 set -euo pipefail
 
 if [[ ${EUID} -eq 0 ]]; then
-  echo "[ERROR] sudo without root shell is expected. Run as ubuntu user." >&2
+  echo "[ERROR] sudo without root shell is expected. Run as regular user." >&2
   exit 1
 fi
 
 APP_DIR="/opt/multimodal-fashion-recommender-system"
 SERVICE_FILE="/etc/systemd/system/fashion-search.service"
+SERVICE_TMPL="infra/systemd/fashion-search.service"
+RUN_USER="${USER}"
+RUN_GROUP="$(id -gn)"
 
-sudo apt-get update
-sudo apt-get install -y ca-certificates curl git jq
+if command -v apt-get >/dev/null 2>&1; then
+  sudo apt-get update
+  sudo apt-get install -y ca-certificates curl git jq
+elif command -v dnf >/dev/null 2>&1; then
+  sudo dnf update -y
+  sudo dnf install -y ca-certificates curl git jq shadow-utils
+else
+  echo "[ERROR] Unsupported package manager. Need apt-get or dnf." >&2
+  exit 1
+fi
 
 if ! command -v docker >/dev/null 2>&1; then
   curl -fsSL https://get.docker.com | sudo sh
@@ -33,7 +44,10 @@ cp -n docker-compose.yaml docker-compose.prod.yaml || true
 docker compose -f docker-compose.prod.yaml pull || true
 docker compose -f docker-compose.prod.yaml up -d
 
-sudo cp infra/systemd/fashion-search.service "${SERVICE_FILE}"
+sed \
+  -e "s/__RUN_USER__/${RUN_USER}/g" \
+  -e "s/__RUN_GROUP__/${RUN_GROUP}/g" \
+  "${SERVICE_TMPL}" | sudo tee "${SERVICE_FILE}" >/dev/null
 sudo systemctl daemon-reload
 sudo systemctl enable --now fashion-search.service
 
