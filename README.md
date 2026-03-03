@@ -99,3 +99,4 @@ http://localhost:3000/ui/
 - HTTPS 자동 설정: `infra/scripts/install_nginx_ssl.sh`
 - k6 부하 테스트: `loadtest/search.js`, `loadtest/README.md`
 - DB 튜닝 실험: `db_tuning/README.md`, `db_tuning/postgres/`
+- CI/K8s 실습: `ops/ci-k8s-practice.md`, `Jenkinsfile`, `k8s/overlays/local/`

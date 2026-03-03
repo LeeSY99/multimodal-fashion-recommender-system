@@ -1,3 +1,4 @@
+#!/bin/sh
 # scripts/fetch_assets.sh
 set -eu
 : "${OWNER:=f-lab-edu}"
