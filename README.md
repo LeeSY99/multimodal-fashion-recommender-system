@@ -86,3 +86,16 @@ docker compose logs -f multimodal-fashion-search
 ```
 #### 3) Open UI
 http://localhost:3000/ui/
+
+## 운영/장애대응 실습 가이드
+
+실무형 IT 직무 포트폴리오를 위한 운영 산출물을 추가했습니다.
+
+- 운영 런북: `ops/runbook.md`
+- 장애 리포트 템플릿: `ops/incident-report-template.md`
+- Nginx 설정: `infra/nginx/fashion-search.conf`
+- systemd 서비스: `infra/systemd/fashion-search.service`
+- EC2 배포 스크립트: `infra/scripts/deploy_ec2.sh`
+- HTTPS 자동 설정: `infra/scripts/install_nginx_ssl.sh`
+- k6 부하 테스트: `loadtest/search.js`, `loadtest/README.md`
+- DB 튜닝 실험: `db_tuning/README.md`, `db_tuning/postgres/`

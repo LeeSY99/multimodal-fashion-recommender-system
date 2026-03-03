@@ -1,0 +1,41 @@
+services:
+  fetch-assets:
+    image: alpine:3.20
+    working_dir: /work
+    environment:
+      OWNER: LeeSY99
+      REPO: multimodal-fashion-recommender-system
+      DATA_ASSETS_VER: d0.1.0
+      MODEL_ASSETS_VER: m0.1.0
+    volumes:
+      - ./data:/work/data
+      - ./models:/work/models
+      - ./scripts:/work/scripts:ro
+    command: ["/bin/sh", "-lc", "apk add --no-cache curl jq tar && /work/scripts/fetch_assets.sh"]
+    restart: "no"
+
+  multimodal-fashion-search:
+    image: ghcr.io/leesy99/multimodal-fashion-recommender-system:${APP_VER:-v0.1.3}
+    container_name: multimodal-fashion-search
+    depends_on:
+      fetch-assets:
+        condition: service_completed_successfully
+    ports:
+      - "3000:3000"
+    environment:
+      DB_PATH: /app/data/fashion_items.db
+      BM25_PATH: /app/data/bm25_from_item_docs.pkl
+      IMAGE_INDEX_PATH: /app/data/image_index_with_ids.faiss
+      ALS_CONFIG_PATH: /app/config/als_model.yaml
+    volumes:
+      - ./data:/app/data:ro
+      - ./models:/app/models:ro
+      - ./config:/app/config:ro
+    mem_limit: 6g
+    cpus: 2.0
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+    restart: unless-stopped

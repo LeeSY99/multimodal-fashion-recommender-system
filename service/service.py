@@ -2,6 +2,10 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import os
+import json
+import logging
+import time
+import uuid
 
 import bentoml
 import torch
@@ -16,6 +20,7 @@ IMAGE_INDEX_PATH = Path(
     os.getenv("IMAGE_INDEX_PATH", "data/image_index_with_ids.faiss")
 )
 ALS_CONFIG_PATH = Path(os.getenv("ALS_CONFIG_PATH", "config/als_model.yaml"))
+logger = logging.getLogger(__name__)
 
 ui = FastAPI()
 ui_dir = Path(__file__).resolve().parent / "ui"
@@ -90,6 +95,9 @@ class FashionSearchService:
           "stage1_factor": 3
         }
         """
+        request_id = str(uuid.uuid4())
+        started_at = time.perf_counter()
+
         # 입력 검증
         self._validate_input(
             query=query,
@@ -118,15 +126,37 @@ class FashionSearchService:
                 "details": str(e),
             }
 
+        latency_ms = round((time.perf_counter() - started_at) * 1000, 2)
+        logger.info(
+            json.dumps(
+                {
+                    "event": "search_request",
+                    "request_id": request_id,
+                    "query_len": len(query),
+                    "top_k": top_k,
+                    "stage1_factor": stage1_factor,
+                    "user_id_provided": bool(user_id),
+                    "session_len": len(session_item_ids) if session_item_ids else 0,
+                    "success": success,
+                    "result_count": len(results),
+                    "latency_ms": latency_ms,
+                    "error_code": error["code"] if error else None,
+                },
+                ensure_ascii=False,
+            )
+        )
+
         return {
             "results": results,
             "success": success,
             "error": error,
             "meta": {
+                "request_id": request_id,
                 "query": query,
                 "top_k": top_k,
                 "stage1_factor": stage1_factor,
                 "user_id": user_id,
                 "session_len": len(session_item_ids) if session_item_ids else 0,
+                "latency_ms": latency_ms,
             },
         }
