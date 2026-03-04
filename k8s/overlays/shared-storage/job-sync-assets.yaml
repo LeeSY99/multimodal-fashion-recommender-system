@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mfs-sync-assets
+  namespace: mfs
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: sync-assets
+          image: alpine:3.20
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: OWNER
+              value: LeeSY99
+            - name: REPO
+              value: multimodal-fashion-recommender-system
+            - name: DATA_ASSETS_VER
+              value: d0.1.0
+            - name: MODEL_ASSETS_VER
+              value: m0.1.0
+          command:
+            - /bin/sh
+            - -lc
+            - |
+              apk add --no-cache curl tar
+              chmod +x /opt/scripts/fetch_assets.sh
+              /opt/scripts/fetch_assets.sh
+          volumeMounts:
+            - name: data-volume
+              mountPath: /work/data
+            - name: model-volume
+              mountPath: /work/models
+            - name: fetch-script
+              mountPath: /opt/scripts/fetch_assets.sh
+              subPath: fetch_assets.sh
+              readOnly: true
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: mfs-data-pvc
+        - name: model-volume
+          persistentVolumeClaim:
+            claimName: mfs-models-pvc
+        - name: fetch-script
+          configMap:
+            name: mfs-assets-fetch-script
+            defaultMode: 0755

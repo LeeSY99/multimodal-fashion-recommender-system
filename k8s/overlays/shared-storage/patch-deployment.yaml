@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multimodal-fashion-recommender
+  namespace: mfs
+spec:
+  replicas: 2
+  template:
+    spec:
+      initContainers:
+        - name: wait-assets
+          image: alpine:3.20
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -lc
+            - |
+              until [ -f /work/data/.ready-d0.1.0 ] && [ -f /work/models/.ready-m0.1.0 ]; do
+                echo "[wait-assets] waiting for mfs-sync-assets job..."
+                sleep 5
+              done
+              echo "[wait-assets] assets ready"
+          volumeMounts:
+            - name: data-volume
+              mountPath: /work/data
+            - name: model-volume
+              mountPath: /work/models
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: mfs-data-pvc
+        - name: model-volume
+          persistentVolumeClaim:
+            claimName: mfs-models-pvc
