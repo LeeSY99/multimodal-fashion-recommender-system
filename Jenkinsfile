@@ -11,7 +11,7 @@ pipeline {
     IMAGE_NAME = 'ghcr.io/leesy99/multimodal-fashion-recommender-system'
     IMAGE_TAG = "jenkins-${BUILD_NUMBER}"
     IMAGE_LATEST = "latest"
-    KUBECTL_IMAGE = "bitnami/kubectl:1.34"
+    KUBECTL_IMAGE = "bitnami/kubectl:latest"
   }
 
   parameters {
