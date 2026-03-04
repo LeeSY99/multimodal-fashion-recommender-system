@@ -29,10 +29,14 @@ pipeline {
     stage('Run Tests with Coverage') {
       steps {
         sh '''
+          test -f requirements.txt
+          test -f scripts/ci/run_pytest_coverage.sh
+
           docker run --rm \
-            -v "$PWD":/workspace \
-            -w /workspace \
+            -v "${WORKSPACE}":/workspace \
             python:3.11-slim bash -lc '
+              cd /workspace
+              ls -la
               python -m pip install -U pip
               python -m pip install -r requirements.txt -r requirements-dev.txt
               python -m pip install pytest-cov coverage
