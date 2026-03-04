@@ -105,15 +105,12 @@ PY
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
             -w "${WORKSPACE}" \
             -e KUBECONFIG=/kubeconfig \
-            ${KUBECTL_IMAGE} kustomize ${K8S_OVERLAY} > /tmp/mfs-rendered.yaml
-          test -s /tmp/mfs-rendered.yaml
-          docker run --rm \
+            ${KUBECTL_IMAGE} kustomize ${K8S_OVERLAY} \
+          | docker run --rm -i \
             --network host \
-            -v /tmp:/tmp \
-            -v jenkins_home:/var/jenkins_home \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
             -e KUBECONFIG=/kubeconfig \
-            ${KUBECTL_IMAGE} apply --dry-run=client -f /tmp/mfs-rendered.yaml --validate=false
+            ${KUBECTL_IMAGE} apply --dry-run=client -f - --validate=false
         '''
       }
     }
