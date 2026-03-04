@@ -33,6 +33,7 @@ pipeline {
         sh '''
           docker run --rm \
             -v jenkins_home:/var/jenkins_home \
+            -v jenkins_pip_cache:/root/.cache/pip \
             -w "${WORKSPACE}" \
             python:3.11-slim bash -lc '
           python -m pip install -U pip
