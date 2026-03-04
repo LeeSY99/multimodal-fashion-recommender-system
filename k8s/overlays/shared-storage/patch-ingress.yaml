@@ -5,4 +5,4 @@ metadata:
   namespace: mfs
 spec:
   rules:
-    - host: fashion.local
+    - host: 16.176.14.164.nip.io
