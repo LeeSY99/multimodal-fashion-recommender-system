@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  triggers {
+    githubPush()
+  }
+
   options {
     timestamps()
     disableConcurrentBuilds()
@@ -66,7 +70,12 @@ PY
 
     stage('Push Docker Image') {
       when {
-        expression { return params.DEPLOY_TO_K8S }
+        expression {
+          return params.DEPLOY_TO_K8S && (
+            (env.BRANCH_NAME == 'main') ||
+            (env.GIT_BRANCH?.endsWith('/main'))
+          )
+        }
       }
       steps {
         withCredentials([usernamePassword(credentialsId: 'ghcr-creds', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
@@ -82,7 +91,12 @@ PY
 
     stage('Validate K8s Access') {
       when {
-        expression { return params.DEPLOY_TO_K8S }
+        expression {
+          return params.DEPLOY_TO_K8S && (
+            (env.BRANCH_NAME == 'main') ||
+            (env.GIT_BRANCH?.endsWith('/main'))
+          )
+        }
       }
       steps {
         sh '''
@@ -106,7 +120,12 @@ PY
 
     stage('Validate K8s Manifests') {
       when {
-        expression { return params.DEPLOY_TO_K8S }
+        expression {
+          return params.DEPLOY_TO_K8S && (
+            (env.BRANCH_NAME == 'main') ||
+            (env.GIT_BRANCH?.endsWith('/main'))
+          )
+        }
       }
       steps {
         sh '''
@@ -129,7 +148,12 @@ PY
 
     stage('Deploy to Kubernetes') {
       when {
-        expression { return params.DEPLOY_TO_K8S }
+        expression {
+          return params.DEPLOY_TO_K8S && (
+            (env.BRANCH_NAME == 'main') ||
+            (env.GIT_BRANCH?.endsWith('/main'))
+          )
+        }
       }
       steps {
         sh '''

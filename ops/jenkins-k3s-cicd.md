@@ -47,7 +47,21 @@ sudo docker exec -u jenkins jenkins docker ps
 - `K8S_NAMESPACE=mfs`
 - `K8S_OVERLAY=k8s/overlays/shared-storage`
 
-## 5) 첫 배포 실행
+## 5) main push 자동 배포 설정
+
+1. Jenkins Job `Configure -> Build Triggers`
+- `GitHub hook trigger for GITScm polling` 체크
+
+2. GitHub Webhook 설정
+- Repo `Settings -> Webhooks -> Add webhook`
+- Payload URL: `http://<EC2_PUBLIC_IP>:8080/github-webhook/`
+- Content type: `application/json`
+- Events: `Just the push event`
+
+3. Jenkinsfile 조건
+- `main` 브랜치 push일 때만 `Push/Deploy` 스테이지가 실행되도록 조건 설정됨
+
+## 6) 첫 배포 실행
 
 Jenkins `Build with Parameters` 실행 후, 아래 스테이지 통과 확인:
 
@@ -57,7 +71,7 @@ Jenkins `Build with Parameters` 실행 후, 아래 스테이지 통과 확인:
 4. `Validate K8s Manifests`
 5. `Deploy to Kubernetes`
 
-## 6) 배포 후 확인
+## 7) 배포 후 확인
 
 ```bash
 kubectl get pods,svc,ingress,pvc -n mfs
@@ -66,7 +80,7 @@ kubectl rollout status deployment/multimodal-fashion-recommender -n mfs
 kubectl describe pod -n mfs -l app=multimodal-fashion-recommender
 ```
 
-## 7) 자주 나는 오류
+## 8) 자주 나는 오류
 
 1. `docker: permission denied`
 - 원인: `jenkins`가 `docker` 그룹에 없음
