@@ -12,6 +12,7 @@ pipeline {
     IMAGE_TAG = "jenkins-${BUILD_NUMBER}"
     IMAGE_LATEST = "latest"
     KUBECTL_IMAGE = "bitnami/kubectl:latest"
+    K3S_KUBECONFIG = "/etc/rancher/k3s/k3s.yaml"
   }
 
   parameters {
@@ -85,9 +86,10 @@ PY
       steps {
         sh '''
           docker run --rm \
-            -v jenkins_home:/var/jenkins_home \
+            --network host \
+            -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
             -w "${WORKSPACE}" \
-            -e KUBECONFIG=/var/jenkins_home/.kube/config \
+            -e KUBECONFIG=/kubeconfig \
             ${KUBECTL_IMAGE} get ns ${K8S_NAMESPACE}
         '''
       }
@@ -97,15 +99,17 @@ PY
       steps {
         sh '''
           docker run --rm \
-            -v jenkins_home:/var/jenkins_home \
+            --network host \
+            -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
             -w "${WORKSPACE}" \
-            -e KUBECONFIG=/var/jenkins_home/.kube/config \
+            -e KUBECONFIG=/kubeconfig \
             ${KUBECTL_IMAGE} kustomize ${K8S_OVERLAY} > /tmp/mfs-rendered.yaml
           test -s /tmp/mfs-rendered.yaml
           docker run --rm \
+            --network host \
             -v /tmp:/tmp \
-            -v jenkins_home:/var/jenkins_home \
-            -e KUBECONFIG=/var/jenkins_home/.kube/config \
+            -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
+            -e KUBECONFIG=/kubeconfig \
             ${KUBECTL_IMAGE} apply --dry-run=client -f /tmp/mfs-rendered.yaml --validate=false
         '''
       }
@@ -118,34 +122,40 @@ PY
       steps {
         sh '''
           docker run --rm \
-            -v jenkins_home:/var/jenkins_home \
+            --network host \
+            -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
             -w "${WORKSPACE}" \
-            -e KUBECONFIG=/var/jenkins_home/.kube/config \
+            -e KUBECONFIG=/kubeconfig \
             ${KUBECTL_IMAGE} apply -k ${K8S_OVERLAY}
 
           docker run --rm \
-            -v jenkins_home:/var/jenkins_home \
-            -e KUBECONFIG=/var/jenkins_home/.kube/config \
+            --network host \
+            -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
+            -e KUBECONFIG=/kubeconfig \
             ${KUBECTL_IMAGE} set image deployment/multimodal-fashion-recommender app=${IMAGE_NAME}:${IMAGE_TAG} -n ${K8S_NAMESPACE}
 
           if docker run --rm \
-            -v jenkins_home:/var/jenkins_home \
-            -e KUBECONFIG=/var/jenkins_home/.kube/config \
+            --network host \
+            -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
+            -e KUBECONFIG=/kubeconfig \
             ${KUBECTL_IMAGE} get job mfs-sync-assets -n ${K8S_NAMESPACE} >/dev/null 2>&1; then
             docker run --rm \
-              -v jenkins_home:/var/jenkins_home \
-              -e KUBECONFIG=/var/jenkins_home/.kube/config \
+              --network host \
+              -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
+              -e KUBECONFIG=/kubeconfig \
               ${KUBECTL_IMAGE} wait --for=condition=complete job/mfs-sync-assets -n ${K8S_NAMESPACE} --timeout=900s
           fi
 
           docker run --rm \
-            -v jenkins_home:/var/jenkins_home \
-            -e KUBECONFIG=/var/jenkins_home/.kube/config \
+            --network host \
+            -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
+            -e KUBECONFIG=/kubeconfig \
             ${KUBECTL_IMAGE} rollout status deployment/multimodal-fashion-recommender -n ${K8S_NAMESPACE} --timeout=300s
 
           docker run --rm \
-            -v jenkins_home:/var/jenkins_home \
-            -e KUBECONFIG=/var/jenkins_home/.kube/config \
+            --network host \
+            -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
+            -e KUBECONFIG=/kubeconfig \
             ${KUBECTL_IMAGE} get pods,svc,ingress,pvc -n ${K8S_NAMESPACE}
         '''
       }
