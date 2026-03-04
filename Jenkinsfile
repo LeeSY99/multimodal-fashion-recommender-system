@@ -88,7 +88,7 @@ PY
             -v jenkins_home:/var/jenkins_home \
             -w "${WORKSPACE}" \
             -e KUBECONFIG=/var/jenkins_home/.kube/config \
-            ${KUBECTL_IMAGE} kubectl get ns ${K8S_NAMESPACE}
+            ${KUBECTL_IMAGE} get ns ${K8S_NAMESPACE}
         '''
       }
     }
@@ -100,13 +100,13 @@ PY
             -v jenkins_home:/var/jenkins_home \
             -w "${WORKSPACE}" \
             -e KUBECONFIG=/var/jenkins_home/.kube/config \
-            ${KUBECTL_IMAGE} kubectl kustomize ${K8S_OVERLAY} > /tmp/mfs-rendered.yaml
+            ${KUBECTL_IMAGE} kustomize ${K8S_OVERLAY} > /tmp/mfs-rendered.yaml
           test -s /tmp/mfs-rendered.yaml
           docker run --rm \
             -v /tmp:/tmp \
             -v jenkins_home:/var/jenkins_home \
             -e KUBECONFIG=/var/jenkins_home/.kube/config \
-            ${KUBECTL_IMAGE} kubectl apply --dry-run=client -f /tmp/mfs-rendered.yaml --validate=false
+            ${KUBECTL_IMAGE} apply --dry-run=client -f /tmp/mfs-rendered.yaml --validate=false
         '''
       }
     }
@@ -121,32 +121,32 @@ PY
             -v jenkins_home:/var/jenkins_home \
             -w "${WORKSPACE}" \
             -e KUBECONFIG=/var/jenkins_home/.kube/config \
-            ${KUBECTL_IMAGE} kubectl apply -k ${K8S_OVERLAY}
+            ${KUBECTL_IMAGE} apply -k ${K8S_OVERLAY}
 
           docker run --rm \
             -v jenkins_home:/var/jenkins_home \
             -e KUBECONFIG=/var/jenkins_home/.kube/config \
-            ${KUBECTL_IMAGE} kubectl set image deployment/multimodal-fashion-recommender app=${IMAGE_NAME}:${IMAGE_TAG} -n ${K8S_NAMESPACE}
+            ${KUBECTL_IMAGE} set image deployment/multimodal-fashion-recommender app=${IMAGE_NAME}:${IMAGE_TAG} -n ${K8S_NAMESPACE}
 
           if docker run --rm \
             -v jenkins_home:/var/jenkins_home \
             -e KUBECONFIG=/var/jenkins_home/.kube/config \
-            ${KUBECTL_IMAGE} kubectl get job mfs-sync-assets -n ${K8S_NAMESPACE} >/dev/null 2>&1; then
+            ${KUBECTL_IMAGE} get job mfs-sync-assets -n ${K8S_NAMESPACE} >/dev/null 2>&1; then
             docker run --rm \
               -v jenkins_home:/var/jenkins_home \
               -e KUBECONFIG=/var/jenkins_home/.kube/config \
-              ${KUBECTL_IMAGE} kubectl wait --for=condition=complete job/mfs-sync-assets -n ${K8S_NAMESPACE} --timeout=900s
+              ${KUBECTL_IMAGE} wait --for=condition=complete job/mfs-sync-assets -n ${K8S_NAMESPACE} --timeout=900s
           fi
 
           docker run --rm \
             -v jenkins_home:/var/jenkins_home \
             -e KUBECONFIG=/var/jenkins_home/.kube/config \
-            ${KUBECTL_IMAGE} kubectl rollout status deployment/multimodal-fashion-recommender -n ${K8S_NAMESPACE} --timeout=300s
+            ${KUBECTL_IMAGE} rollout status deployment/multimodal-fashion-recommender -n ${K8S_NAMESPACE} --timeout=300s
 
           docker run --rm \
             -v jenkins_home:/var/jenkins_home \
             -e KUBECONFIG=/var/jenkins_home/.kube/config \
-            ${KUBECTL_IMAGE} kubectl get pods,svc,ingress,pvc -n ${K8S_NAMESPACE}
+            ${KUBECTL_IMAGE} get pods,svc,ingress,pvc -n ${K8S_NAMESPACE}
         '''
       }
     }
