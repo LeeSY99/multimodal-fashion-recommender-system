@@ -34,7 +34,6 @@ spec:
             - -lc
             - |
               apk add --no-cache curl tar
-              chmod +x /opt/scripts/fetch_assets.sh
               /opt/scripts/fetch_assets.sh
           volumeMounts:
             - name: data-volume

@@ -176,7 +176,7 @@ PY
             -v jenkins_home:/var/jenkins_home \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
             -e KUBECONFIG=/kubeconfig \
-            ${KUBECTL_IMAGE} rollout status deployment/multimodal-fashion-recommender -n ${K8S_NAMESPACE} --timeout=300s
+            ${KUBECTL_IMAGE} rollout status deployment/multimodal-fashion-recommender -n ${K8S_NAMESPACE} --timeout=1200s
 
           docker run --rm \
             --network host \
