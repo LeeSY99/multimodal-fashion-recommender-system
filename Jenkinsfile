@@ -10,6 +10,7 @@ pipeline {
     PYTHON = 'python3'
     IMAGE_NAME = 'ghcr.io/leesy99/multimodal-fashion-recommender-system'
     IMAGE_TAG = "jenkins-${BUILD_NUMBER}"
+    IMAGE_LATEST = "latest"
   }
 
   parameters {
@@ -57,6 +58,34 @@ PY
       steps {
         sh '''
           docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+          docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:${IMAGE_LATEST}
+        '''
+      }
+    }
+
+    stage('Push Docker Image') {
+      when {
+        expression { return params.DEPLOY_TO_K8S }
+      }
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'ghcr-creds', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
+          sh '''
+            echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USER}" --password-stdin
+            docker push ${IMAGE_NAME}:${IMAGE_TAG}
+            docker push ${IMAGE_NAME}:${IMAGE_LATEST}
+            docker logout ghcr.io || true
+          '''
+        }
+      }
+    }
+
+    stage('Validate K8s Access') {
+      when {
+        expression { return params.DEPLOY_TO_K8S }
+      }
+      steps {
+        sh '''
+          kubectl get ns ${K8S_NAMESPACE}
         '''
       }
     }
@@ -78,6 +107,7 @@ PY
       steps {
         sh '''
           kubectl apply -k ${K8S_OVERLAY}
+          kubectl set image deployment/multimodal-fashion-recommender app=${IMAGE_NAME}:${IMAGE_TAG} -n ${K8S_NAMESPACE}
 
           if kubectl get job mfs-sync-assets -n ${K8S_NAMESPACE} >/dev/null 2>&1; then
             kubectl wait --for=condition=complete job/mfs-sync-assets -n ${K8S_NAMESPACE} --timeout=900s
