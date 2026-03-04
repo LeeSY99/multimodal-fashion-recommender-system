@@ -23,3 +23,19 @@ models/
 preprocess_data/
 recommend/
 tests/
+loadtest/
+db_tuning/
+docs/
+infra/
+k8s/
+ops/
+
+# CI / repo-level files not needed in runtime image build context
+Jenkinsfile
+bentofile.yaml
+docker-compose.yaml
+docker-compose.prod.yaml
+init.sh
+
+# scripts 중 런타임 이미지에 사용하지 않는 항목
+scripts/ci/
