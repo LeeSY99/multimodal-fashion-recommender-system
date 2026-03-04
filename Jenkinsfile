@@ -15,6 +15,7 @@ pipeline {
   parameters {
     booleanParam(name: 'DEPLOY_TO_K8S', defaultValue: false, description: 'Deploy to Kubernetes after CI')
     string(name: 'K8S_NAMESPACE', defaultValue: 'mfs', description: 'Kubernetes namespace for deployment')
+    choice(name: 'K8S_OVERLAY', choices: ['k8s/overlays/shared-storage', 'k8s/overlays/local'], description: 'Kustomize overlay to deploy')
   }
 
   stages {
@@ -63,8 +64,9 @@ PY
     stage('Validate K8s Manifests') {
       steps {
         sh '''
-          kubectl kustomize k8s/base > /tmp/mfs-rendered.yaml
+          kubectl kustomize ${K8S_OVERLAY} > /tmp/mfs-rendered.yaml
           test -s /tmp/mfs-rendered.yaml
+          kubectl apply --dry-run=client -f /tmp/mfs-rendered.yaml --validate=false
         '''
       }
     }
@@ -75,8 +77,14 @@ PY
       }
       steps {
         sh '''
-          kubectl apply -k k8s/base -n ${K8S_NAMESPACE}
-          kubectl rollout status deployment/multimodal-fashion-recommender -n ${K8S_NAMESPACE} --timeout=180s
+          kubectl apply -k ${K8S_OVERLAY}
+
+          if kubectl get job mfs-sync-assets -n ${K8S_NAMESPACE} >/dev/null 2>&1; then
+            kubectl wait --for=condition=complete job/mfs-sync-assets -n ${K8S_NAMESPACE} --timeout=900s
+          fi
+
+          kubectl rollout status deployment/multimodal-fashion-recommender -n ${K8S_NAMESPACE} --timeout=300s
+          kubectl get pods,svc,ingress,pvc -n ${K8S_NAMESPACE}
         '''
       }
     }
