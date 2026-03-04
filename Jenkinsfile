@@ -29,14 +29,19 @@ pipeline {
     stage('Run Tests with Coverage') {
       steps {
         sh '''
-          ${PYTHON} -m pip install -U pip
-          ${PYTHON} -m pip install -r requirements.txt -r requirements-dev.txt
-          ${PYTHON} -m pip install pytest-cov coverage nltk
-          ${PYTHON} - <<'PY'
+          docker run --rm \
+            -v jenkins_home:/var/jenkins_home \
+            -w "${WORKSPACE}" \
+            python:3.11-slim bash -lc '
+          python -m pip install -U pip
+          python -m pip install -r requirements.txt -r requirements-dev.txt
+          python -m pip install pytest-cov coverage nltk
+          python - <<'"'"'PY'"'"'
 import nltk
 nltk.download("stopwords", quiet=True)
 PY
-          PYTHON_BIN=${PYTHON} bash scripts/ci/run_pytest_coverage.sh
+          PYTHON_BIN=python bash scripts/ci/run_pytest_coverage.sh
+          '
         '''
       }
       post {
