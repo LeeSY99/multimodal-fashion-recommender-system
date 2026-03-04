@@ -5,6 +5,8 @@ metadata:
   namespace: mfs
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   template:
     spec:
       containers:
