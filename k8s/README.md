@@ -69,14 +69,14 @@ kubectl logs -n mfs deploy/multimodal-fashion-recommender --tail=100
 - S3 + 캐시 프록시(Nginx/CloudFront) 사용
 - 또는 RWX 스토리지(EFS/NFS) + PVC 공유
 
-## 6) 공유 스토리지 오버레이 (포트폴리오 추천)
+## 6) 공유 스토리지 오버레이 (포트폴리오 최종 구성)
 
 `overlays/shared-storage`는 다음 흐름으로 동작합니다.
 
 1. PVC 생성 (`mfs-data-pvc`, `mfs-models-pvc`)
 2. `Job(mfs-sync-assets)`가 Release에서 자산 1회 동기화
 3. Deployment는 `wait-assets` initContainer로 준비 완료 마커를 기다린 뒤 앱 시작
-4. Replica 2개가 같은 PVC를 마운트해서 실행
+4. 단일 노드 안정성을 위해 `replicas=1` + `Recreate` 전략으로 실행
 
 적용:
 
@@ -89,3 +89,4 @@ kubectl rollout status deployment/multimodal-fashion-recommender -n mfs
 주의:
 - k3s 기본 `local-path`는 `ReadWriteOnce`입니다.
 - 단일 노드에서는 문제 없지만, 멀티 노드 확장에는 RWX(EFS/NFS) 스토리지 클래스로 바꿔야 합니다.
+- 첫 배포는 Release 자산 다운로드 시간이 길 수 있으므로(수 분~10분+), Job 완료 대기 시간을 여유 있게 잡아야 합니다.

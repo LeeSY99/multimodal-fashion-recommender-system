@@ -92,6 +92,7 @@ http://localhost:3000/ui/
 실무형 IT 직무 포트폴리오를 위한 운영 산출물을 추가했습니다.
 
 - 운영 런북: `ops/runbook.md`
+- Jenkins + K3s CI/CD 가이드: `ops/jenkins-k3s-cicd.md`
 - 장애 리포트 템플릿: `ops/incident-report-template.md`
 - Nginx 설정: `infra/nginx/fashion-search.conf`
 - systemd 서비스: `infra/systemd/fashion-search.service`
@@ -99,4 +100,22 @@ http://localhost:3000/ui/
 - HTTPS 자동 설정: `infra/scripts/install_nginx_ssl.sh`
 - k6 부하 테스트: `loadtest/search.js`, `loadtest/README.md`
 - DB 튜닝 실험: `db_tuning/README.md`, `db_tuning/postgres/`
-- CI/K8s 실습: `ops/ci-k8s-practice.md`, `Jenkinsfile`, `k8s/overlays/local/`
+
+## CI/CD 최종 상태 (Portfolio)
+
+현재 레포는 아래 E2E 파이프라인으로 검증되었습니다.
+
+1. Jenkins CI: pytest + coverage
+2. Docker build: `ghcr.io/leesy99/multimodal-fashion-recommender-system:jenkins-<build>`
+3. GHCR push: build tag + `latest`
+4. K8s CD: `k8s/overlays/shared-storage` apply
+5. Asset Job: `mfs-sync-assets` 완료 대기
+6. Rollout 확인 후 서비스 노출
+
+최종 확인 체크리스트:
+
+```bash
+kubectl get pods,svc,ingress,pvc -n mfs
+kubectl get job mfs-sync-assets -n mfs
+kubectl rollout status deployment/multimodal-fashion-recommender -n mfs
+```

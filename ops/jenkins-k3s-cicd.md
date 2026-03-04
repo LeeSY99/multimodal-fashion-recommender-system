@@ -10,20 +10,26 @@
 
 ## 2) Jenkins 서버 권한 설정
 
+Jenkins를 Docker 컨테이너로 실행한다는 전제로 작성했습니다.
+
 ```bash
-sudo usermod -aG docker jenkins
-sudo mkdir -p /var/lib/jenkins/.kube
-sudo cp /etc/rancher/k3s/k3s.yaml /var/lib/jenkins/.kube/config
-sudo chown -R jenkins:jenkins /var/lib/jenkins/.kube
-sudo chmod 600 /var/lib/jenkins/.kube/config
-sudo systemctl restart jenkins
+DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
+
+sudo docker run -d --name jenkins \
+  --restart unless-stopped \
+  -p 8080:8080 -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /usr/bin/docker:/usr/bin/docker \
+  -v /etc/rancher/k3s/k3s.yaml:/etc/rancher/k3s/k3s.yaml:ro \
+  --group-add ${DOCKER_GID} \
+  jenkins/jenkins:lts-jdk17
 ```
 
 검증(서버에서):
 
 ```bash
-sudo -u jenkins -H kubectl get nodes
-sudo -u jenkins -H docker ps
+sudo docker exec -u jenkins jenkins docker ps
 ```
 
 ## 3) Jenkins Credential 추가
@@ -82,3 +88,9 @@ kubectl create secret docker-registry ghcr-pull-secret \
   --docker-email=<email> \
   -n mfs
 ```
+
+4. `rollout status timeout` (single node + PVC)
+- 원인: RWO PVC 환경에서 RollingUpdate 충돌 또는 초기 자산 다운로드 지연
+- 조치:
+  - `shared-storage` overlay는 `replicas=1`, `Recreate` 전략 사용
+  - rollout timeout 여유 확보
