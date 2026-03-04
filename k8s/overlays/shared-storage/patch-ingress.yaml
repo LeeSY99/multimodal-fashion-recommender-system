@@ -5,4 +5,4 @@ metadata:
   namespace: mfs
 spec:
   rules:
-    - host: <EC2_PUBLIC_IP>.nip.io
+    - host: fashion.local

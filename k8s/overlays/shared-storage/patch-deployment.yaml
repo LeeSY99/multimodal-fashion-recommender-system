@@ -8,6 +8,7 @@ spec:
   template:
     spec:
       initContainers:
+        - $patch: replace
         - name: wait-assets
           image: alpine:3.20
           imagePullPolicy: IfNotPresent
@@ -26,9 +27,13 @@ spec:
             - name: model-volume
               mountPath: /work/models
       volumes:
+        - $patch: replace
         - name: data-volume
           persistentVolumeClaim:
             claimName: mfs-data-pvc
         - name: model-volume
           persistentVolumeClaim:
             claimName: mfs-models-pvc
+        - name: als-config
+          configMap:
+            name: mfs-als-config
