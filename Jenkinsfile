@@ -104,15 +104,19 @@ PY
     }
 
     stage('Validate K8s Manifests') {
+      when {
+        expression { return params.DEPLOY_TO_K8S }
+      }
       steps {
         sh '''
+          OVERLAY_PATH="${K8S_OVERLAY:-k8s/overlays/shared-storage}"
           docker run --rm \
             --network host \
             -v jenkins_home:/var/jenkins_home \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
             -w "${WORKSPACE}" \
             -e KUBECONFIG=/kubeconfig \
-            ${KUBECTL_IMAGE} kustomize ${K8S_OVERLAY} \
+            ${KUBECTL_IMAGE} kustomize "${OVERLAY_PATH}" \
           | docker run --rm -i \
             --network host \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
@@ -128,13 +132,14 @@ PY
       }
       steps {
         sh '''
+          OVERLAY_PATH="${K8S_OVERLAY:-k8s/overlays/shared-storage}"
           docker run --rm \
             --network host \
             -v jenkins_home:/var/jenkins_home \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
             -w "${WORKSPACE}" \
             -e KUBECONFIG=/kubeconfig \
-            ${KUBECTL_IMAGE} apply -k ${K8S_OVERLAY}
+            ${KUBECTL_IMAGE} apply -k "${OVERLAY_PATH}"
 
           docker run --rm \
             --network host \
