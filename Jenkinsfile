@@ -90,7 +90,7 @@ PY
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
             -w "${WORKSPACE}" \
             -e KUBECONFIG=/kubeconfig \
-            ${KUBECTL_IMAGE} get ns ${K8S_NAMESPACE}
+            ${KUBECTL_IMAGE} cluster-info
         '''
       }
     }
