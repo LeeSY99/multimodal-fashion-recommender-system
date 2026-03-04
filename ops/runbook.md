@@ -6,6 +6,9 @@
 - Process manager: `systemd`
 - Infra: AWS EC2 Ubuntu 22.04
 
+## Jenkins + K3s CI/CD
+- Jenkins 파이프라인 운영 가이드: `ops/jenkins-k3s-cicd.md`
+
 ## 2. 최초 배포
 ```bash
 git clone https://github.com/LeeSY99/multimodal-fashion-recommender-system.git
