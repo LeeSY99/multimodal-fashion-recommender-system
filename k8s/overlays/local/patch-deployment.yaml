@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multimodal-fashion-recommender
+  namespace: mfs
+spec:
+  template:
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/leesy99/multimodal-fashion-recommender-system:latest
+          imagePullPolicy: Always

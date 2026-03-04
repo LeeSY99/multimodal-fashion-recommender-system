@@ -3,11 +3,14 @@ kind: Service
 metadata:
   name: multimodal-fashion-recommender
   namespace: mfs
+  labels:
+    app: multimodal-fashion-recommender
 spec:
   selector:
     app: multimodal-fashion-recommender
   ports:
-    - port: 3000
+    - name: http
+      protocol: TCP
+      port: 80
       targetPort: 3000
-      nodePort: 30000
-  type: NodePort
+  type: ClusterIP

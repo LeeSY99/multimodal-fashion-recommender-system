@@ -3,8 +3,11 @@ kind: Deployment
 metadata:
   name: multimodal-fashion-recommender
   namespace: mfs
+  labels:
+    app: multimodal-fashion-recommender
 spec:
   replicas: 1
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: multimodal-fashion-recommender
@@ -13,48 +16,42 @@ spec:
       labels:
         app: multimodal-fashion-recommender
     spec:
-      volumes:
-        - name: data
-          emptyDir: {}
-        - name: models
-          emptyDir: {}
-        - name: config
-          configMap:
-            name: mfs-config
-        - name: scripts
-          configMap:
-            name: mfs-scripts
-
       initContainers:
         - name: fetch-assets
           image: alpine:3.20
-          workingDir: /work
+          imagePullPolicy: IfNotPresent
           env:
             - name: OWNER
-              value: leesy99
+              value: LeeSY99
             - name: REPO
               value: multimodal-fashion-recommender-system
             - name: DATA_ASSETS_VER
               value: d0.1.0
             - name: MODEL_ASSETS_VER
               value: m0.1.0
-          command: ["/bin/sh","-lc"]
-          args:
-            - apk add --no-cache curl jq tar && sh /work/scripts/fetch_assets.sh
+          command:
+            - /bin/sh
+            - -lc
+            - |
+              apk add --no-cache curl tar
+              chmod +x /opt/scripts/fetch_assets.sh
+              /opt/scripts/fetch_assets.sh
           volumeMounts:
-            - name: data
+            - name: data-volume
               mountPath: /work/data
-            - name: models
+            - name: model-volume
               mountPath: /work/models
-            - name: scripts
-              mountPath: /work/scripts/fetch_assets.sh
+            - name: fetch-script
+              mountPath: /opt/scripts/fetch_assets.sh
               subPath: fetch_assets.sh
               readOnly: true
       containers:
-        - name: api
-          image: ghcr.io/leesy99/multimodal-fashion-recommender-system
+        - name: app
+          image: ghcr.io/leesy99/multimodal-fashion-recommender-system:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
+              name: http
           env:
             - name: DB_PATH
               value: /app/data/fashion_items.db
@@ -64,14 +61,49 @@ spec:
               value: /app/data/image_index_with_ids.faiss
             - name: ALS_CONFIG_PATH
               value: /app/config/als_model.yaml
+          readinessProbe:
+            httpGet:
+              path: /ui/
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /ui/
+              port: http
+            initialDelaySeconds: 40
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 4
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi"
+            limits:
+              cpu: "2000m"
+              memory: "6Gi"
           volumeMounts:
-            - name: data
+            - name: data-volume
               mountPath: /app/data
               readOnly: true
-            - name: models
+            - name: model-volume
               mountPath: /app/models
               readOnly: true
-            - name: config
-              mountPath: /app/config
+            - name: als-config
+              mountPath: /app/config/als_model.yaml
+              subPath: als_model.yaml
               readOnly: true
-          
+      volumes:
+        - name: data-volume
+          emptyDir: {}
+        - name: model-volume
+          emptyDir: {}
+        - name: als-config
+          configMap:
+            name: mfs-als-config
+        - name: fetch-script
+          configMap:
+            name: mfs-assets-fetch-script
+            defaultMode: 0755
