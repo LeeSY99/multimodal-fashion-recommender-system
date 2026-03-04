@@ -87,6 +87,9 @@ docker compose logs -f multimodal-fashion-search
 #### 3) Open UI
 http://localhost:3000/ui/
 
+#### 4) Deployed Service URL
+http://13.55.75.75.nip.io/ui/
+
 ## 운영/장애대응 실습 가이드
 
 실무형 IT 직무 포트폴리오를 위한 운영 산출물을 추가했습니다.
