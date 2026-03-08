@@ -101,6 +101,7 @@ PY
       steps {
         sh '''
           docker run --rm \
+            --user 0:0 \
             --network host \
             -v jenkins_home:/var/jenkins_home \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
@@ -108,6 +109,7 @@ PY
             ${KUBECTL_IMAGE} delete job mfs-sync-assets -n ${K8S_NAMESPACE} --ignore-not-found=true
 
           docker run --rm \
+            --user 0:0 \
             --network host \
             -v jenkins_home:/var/jenkins_home \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
@@ -131,6 +133,7 @@ PY
         sh '''
           OVERLAY_PATH="${K8S_OVERLAY:-k8s/overlays/shared-storage}"
           docker run --rm \
+            --user 0:0 \
             --network host \
             -v jenkins_home:/var/jenkins_home \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
@@ -138,6 +141,7 @@ PY
             -e KUBECONFIG=/kubeconfig \
             ${KUBECTL_IMAGE} kustomize "${OVERLAY_PATH}" \
           | docker run --rm -i \
+            --user 0:0 \
             --network host \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
             -e KUBECONFIG=/kubeconfig \
@@ -159,6 +163,7 @@ PY
         sh '''
           OVERLAY_PATH="${K8S_OVERLAY:-k8s/overlays/shared-storage}"
           docker run --rm \
+            --user 0:0 \
             --network host \
             -v jenkins_home:/var/jenkins_home \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
@@ -167,6 +172,7 @@ PY
             ${KUBECTL_IMAGE} apply -k "${OVERLAY_PATH}"
 
           docker run --rm \
+            --user 0:0 \
             --network host \
             -v jenkins_home:/var/jenkins_home \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
@@ -174,24 +180,28 @@ PY
             ${KUBECTL_IMAGE} set image deployment/multimodal-fashion-recommender app=${IMAGE_NAME}:${IMAGE_TAG} -n ${K8S_NAMESPACE}
 
           if docker run --rm \
+            --user 0:0 \
             --network host \
             -v jenkins_home:/var/jenkins_home \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
             -e KUBECONFIG=/kubeconfig \
             ${KUBECTL_IMAGE} get job mfs-sync-assets -n ${K8S_NAMESPACE} >/dev/null 2>&1; then
             docker run --rm \
+              --user 0:0 \
               --network host \
               -v jenkins_home:/var/jenkins_home \
               -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
               -e KUBECONFIG=/kubeconfig \
               ${KUBECTL_IMAGE} wait --for=condition=complete job/mfs-sync-assets -n ${K8S_NAMESPACE} --timeout=900s || {
                 docker run --rm \
+                  --user 0:0 \
                   --network host \
                   -v jenkins_home:/var/jenkins_home \
                   -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
                   -e KUBECONFIG=/kubeconfig \
                   ${KUBECTL_IMAGE} get pods -n ${K8S_NAMESPACE} -l job-name=mfs-sync-assets -o wide || true
                 docker run --rm \
+                  --user 0:0 \
                   --network host \
                   -v jenkins_home:/var/jenkins_home \
                   -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
@@ -202,6 +212,7 @@ PY
           fi
 
           docker run --rm \
+            --user 0:0 \
             --network host \
             -v jenkins_home:/var/jenkins_home \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
@@ -209,6 +220,7 @@ PY
             ${KUBECTL_IMAGE} rollout status deployment/multimodal-fashion-recommender -n ${K8S_NAMESPACE} --timeout=1200s
 
           docker run --rm \
+            --user 0:0 \
             --network host \
             -v jenkins_home:/var/jenkins_home \
             -v ${K3S_KUBECONFIG}:/kubeconfig:ro \
