@@ -75,7 +75,7 @@ PY
     stage('Push Docker Image') {
       when {
         expression {
-          return params.DEPLOY_TO_K8S && (
+          return (
             (env.BRANCH_NAME == 'main') ||
             (env.GIT_BRANCH?.endsWith('/main'))
           )
@@ -96,7 +96,7 @@ PY
     stage('Validate K8s Access') {
       when {
         expression {
-          return params.DEPLOY_TO_K8S && (
+          return (
             (env.BRANCH_NAME == 'main') ||
             (env.GIT_BRANCH?.endsWith('/main'))
           )
@@ -127,7 +127,7 @@ PY
     stage('Validate K8s Manifests') {
       when {
         expression {
-          return params.DEPLOY_TO_K8S && (
+          return (
             (env.BRANCH_NAME == 'main') ||
             (env.GIT_BRANCH?.endsWith('/main'))
           )
@@ -157,7 +157,7 @@ PY
     stage('Deploy to Kubernetes') {
       when {
         expression {
-          return params.DEPLOY_TO_K8S && (
+          return (
             (env.BRANCH_NAME == 'main') ||
             (env.GIT_BRANCH?.endsWith('/main'))
           )
