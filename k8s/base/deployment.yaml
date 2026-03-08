@@ -8,6 +8,7 @@ metadata:
 spec:
   replicas: 1
   revisionHistoryLimit: 3
+  progressDeadlineSeconds: 1200
   selector:
     matchLabels:
       app: multimodal-fashion-recommender
