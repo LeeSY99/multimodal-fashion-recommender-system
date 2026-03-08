@@ -12,6 +12,7 @@ pipeline {
 
   environment {
     PYTHON = 'python3'
+    PYTEST_WORKERS = 'auto'
     IMAGE_NAME = 'ghcr.io/leesy99/multimodal-fashion-recommender-system'
     IMAGE_TAG = "jenkins-${BUILD_NUMBER}"
     IMAGE_LATEST = "latest"
@@ -35,24 +36,23 @@ pipeline {
     stage('Run Tests with Coverage') {
       steps {
         sh '''
+          REQ_HASH="$(sha256sum requirements-ci.txt | awk '{print substr($1,1,12)}')"
+          CI_TEST_IMAGE="mfs-ci-test:${REQ_HASH}"
+
+          if ! docker image inspect "${CI_TEST_IMAGE}" >/dev/null 2>&1; then
+            docker build \
+              -f docker/ci-test.Dockerfile \
+              --build-arg REQUIREMENTS_FILE=requirements-ci.txt \
+              -t "${CI_TEST_IMAGE}" .
+          fi
+
           docker run --rm \
             -v jenkins_home:/var/jenkins_home \
-            -v jenkins_pip_cache:/root/.cache/pip \
             -w "${WORKSPACE}" \
-            python:3.11-slim bash -lc '
-          set -euo pipefail
-          python -m pip install -U pip
-          python -m pip install -r requirements.txt -r requirements-dev.txt
-          python -m pip install pytest-cov coverage nltk
-          python - <<'"'"'PY'"'"'
-import numpy  # noqa: F401
-PY
-          python - <<'"'"'PY'"'"'
-import nltk
-nltk.download("stopwords", quiet=True)
-PY
-          PYTHON_BIN=python bash scripts/ci/run_pytest_coverage.sh
-          '
+            -e PYTEST_WORKERS="${PYTEST_WORKERS}" \
+            "${CI_TEST_IMAGE}" bash -lc '
+              PYTHON_BIN=python bash scripts/ci/run_pytest_coverage.sh
+            '
         '''
       }
       post {
@@ -65,10 +65,29 @@ PY
 
     stage('Build Docker Image') {
       steps {
-        sh '''
-          docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-          docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:${IMAGE_LATEST}
-        '''
+        withCredentials([usernamePassword(credentialsId: 'ghcr-creds', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
+          sh '''
+            if docker buildx version >/dev/null 2>&1; then
+              docker buildx inspect jenkins-buildx >/dev/null 2>&1 || \
+                docker buildx create --name jenkins-buildx --driver docker-container --use
+              docker buildx use jenkins-buildx
+
+              echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USER}" --password-stdin
+              docker buildx build \
+                -f dockerfile \
+                -t ${IMAGE_NAME}:${IMAGE_TAG} \
+                -t ${IMAGE_NAME}:${IMAGE_LATEST} \
+                --cache-from type=registry,ref=${IMAGE_NAME}:buildcache \
+                --cache-to type=registry,ref=${IMAGE_NAME}:buildcache,mode=max \
+                --load \
+                .
+              docker logout ghcr.io || true
+            else
+              docker build -f dockerfile -t ${IMAGE_NAME}:${IMAGE_TAG} .
+              docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:${IMAGE_LATEST}
+            fi
+          '''
+        }
       }
     }
 
