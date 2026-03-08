@@ -36,8 +36,8 @@ pipeline {
     stage('Run Tests with Coverage') {
       steps {
         sh '''
-          REQ_HASH="$(sha256sum requirements-ci.txt | awk '{print substr($1,1,12)}')"
-          CI_TEST_IMAGE="mfs-ci-test:${REQ_HASH}"
+          CI_IMAGE_HASH="$(cat requirements.txt requirements-ci.txt docker/ci-test.Dockerfile | sha256sum | awk '{print substr($1,1,12)}')"
+          CI_TEST_IMAGE="mfs-ci-test:${CI_IMAGE_HASH}"
 
           if ! docker image inspect "${CI_TEST_IMAGE}" >/dev/null 2>&1; then
             docker build \
