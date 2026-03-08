@@ -40,9 +40,13 @@ pipeline {
             -v jenkins_pip_cache:/root/.cache/pip \
             -w "${WORKSPACE}" \
             python:3.11-slim bash -lc '
+          set -euo pipefail
           python -m pip install -U pip
           python -m pip install -r requirements.txt -r requirements-dev.txt
           python -m pip install pytest-cov coverage nltk
+          python - <<'"'"'PY'"'"'
+import numpy  # noqa: F401
+PY
           python - <<'"'"'PY'"'"'
 import nltk
 nltk.download("stopwords", quiet=True)
