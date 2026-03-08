@@ -20,7 +20,7 @@ pipeline {
   }
 
   parameters {
-    booleanParam(name: 'DEPLOY_TO_K8S', defaultValue: false, description: 'Deploy to Kubernetes after CI')
+    booleanParam(name: 'DEPLOY_TO_K8S', defaultValue: true, description: 'Deploy to Kubernetes after CI')
     string(name: 'K8S_NAMESPACE', defaultValue: 'mfs', description: 'Kubernetes namespace for deployment')
     choice(name: 'K8S_OVERLAY', choices: ['k8s/overlays/shared-storage', 'k8s/overlays/local'], description: 'Kustomize overlay to deploy')
   }
